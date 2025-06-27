@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Analizador de Notas y Tonalidades</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://unpkg.com/tone/build/Tone.js"></script>
+  <script src="https://unpkg.com/meyda/dist/web/meyda.min.js"></script>
+  <link rel="stylesheet" href="fondo.css" />
+</head>
+<body>
+    
+  <h1 id="Titulo">🎼 Analizador de Notas y Tonalidades</h1>
+  <p>Sube tu archivo de audio (MP3/WAV). El sistema detectará las notas utilizadas y posibles tonalidades.</p>
+
+  <input type="file" id="audioFile" accept="audio/*" />
+  <button id="startBtn" disabled>🔍 Analizar</button>
+  <progress id="progressBar" value="0" max="100" style="width: 80%; height: 20px; margin-top: 20px;"></progress>
+
+
+  <h2 id="notas">Notas encontradas: --</h2>
+  <h2 id="tonalidades">Tonalidades posibles: --</h2>
+
+  <canvas id="spectrumCanvas" width="800" height="200"></canvas>
+
+  <div id="piano">
+    <div class="key white" data-note="C"></div>
+    <div class="key black" data-note="C#"></div>
+    <div class="key white" data-note="D"></div>
+    <div class="key black" data-note="D#"></div>
+    <div class="key white" data-note="E"></div>
+    <div class="key white" data-note="F"></div>
+    <div class="key black" data-note="F#"></div>
+    <div class="key white" data-note="G"></div>
+    <div class="key black" data-note="G#"></div>
+    <div class="key white" data-note="A"></div>
+    <div class="key black" data-note="A#"></div>
+    <div class="key white" data-note="B"></div>
+  </div>
+  
+  
+
+
+  <script src="script.js"></script>
+</body>
+</html>

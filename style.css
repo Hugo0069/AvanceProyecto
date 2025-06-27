@@ -1,0 +1,92 @@
+body {
+    font-family: Arial, sans-serif;
+    background: #1b1b1b;
+    color: white;
+    text-align: center;
+    padding: 40px;
+  }
+  
+  input, button {
+    margin-top: 20px;
+    padding: 10px 15px;
+    font-size: 1em;
+  }
+
+  #notas, #Titulo,
+  #tonalidades {
+  background-color: rgba(0, 0, 0, 0.7); /* negro translúcido */
+  color: white;
+  padding: 10px 15px;
+  margin: 10px auto;
+  width: fit-content;
+  max-width: 90%;
+  border-radius: 10px;
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  box-shadow: 0 0 10px #000;
+  white-space: pre-line; /* para que se respeten los saltos de línea */
+}
+
+  
+  button {
+    background-color: #00b894;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 6px;
+  }
+  
+  button:hover {
+    background-color: #009e7a;
+  }
+  
+  h2 {
+    margin-top: 40px;
+  }
+  #spectrumCanvas {
+    background-color: #111;
+    margin-top: 20px;
+    border: 1px solid #333;
+  }
+  
+  #piano {
+    position: relative;
+    width: fit-content;
+    height: 150px;
+    margin: 30px auto;
+    display: flex;
+  }
+  
+  
+  .key.white {
+    width: 40px;
+    height: 150px;
+    background: white;
+    border: 1px solid black;
+    float: left;
+    position: relative;
+    z-index: 1;
+    box-sizing: border-box;
+  }
+  
+  .key.black {
+    width: 25px;
+    height: 90px;
+    background: black;
+    position: absolute;
+    z-index: 2;
+    margin-left: -12.5px;
+  }
+  
+  .key.active {
+    background-color: yellow !important;
+  }
+  
+  /* Posiciones de teclas negras sobre blancas */
+  .key.black[data-note="C#"] { left: 30px; }
+  .key.black[data-note="D#"] { left: 70px; }
+  .key.black[data-note="F#"] { left: 150px; }
+  .key.black[data-note="G#"] { left: 190px; }
+  .key.black[data-note="A#"] { left: 230px; }
+  
+  
