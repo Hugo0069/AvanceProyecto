@@ -59,7 +59,7 @@ document.getElementById("startBtn").addEventListener("click", () => {
 
     // ✅ UMBRAL: evita falsas notas cuando no hay energía
     const energiaChroma = chroma.reduce((a, b) => a + b, 0);
-    if (energiaChroma < 1.5) return; // Ignora si no hay información tonal suficiente
+    if (energiaChroma < 2.5) return; // Ignora si no hay información tonal suficiente
 
     // ⬆️ Acumular para análisis posterior
     for (let i = 0; i < 12; i++) {
@@ -116,9 +116,16 @@ function mostrarTonalidades(chroma) {
   }
 
   const top3 = tonalidades.sort((a, b) => b.correlacion - a.correlacion).slice(0, 3);
-  const lista = top3.map(t => `🎵 ${t.tonalidad} (${(t.correlacion * 100).toFixed(1)}%)`);
+
+  const lugares = ["🥇", "🥈", "🥉"];
+  const lista = top3.map((t, i) => `${lugares[i]} ${t.tonalidad}`);
+
   document.getElementById("tonalidades").innerText = `Tonalidades posibles:\n${lista.join("\n")}`;
+
+  // ✅ Guardar la tonalidad más fuerte para sugerir acordes luego
+  tonalidadDetectada = top3[0].tonalidad;
 }
+
 
 function rotar(arr, n) {
   return arr.slice(n).concat(arr.slice(0, n));
@@ -165,4 +172,30 @@ function activarTecla(nota) {
   document.querySelectorAll(".key").forEach(el => el.classList.remove("active"));
   const tecla = document.querySelector(`.key[data-note="${nota}"]`);
   if (tecla) tecla.classList.add("active");
+}
+
+function mostrarAcordesPosibles(tonalidad) {
+  const acordesContainer = document.getElementById("acordes");
+  if (!acordesContainer) return;
+
+  const [nota, tipo] = tonalidad.split(" ");
+  const grados = tipo === "Mayor"
+    ? ["I", "ii", "iii", "IV", "V", "vi", "vii°"]
+    : ["i", "ii°", "III", "iv", "v", "VI", "VII"];
+
+  const escalaMayor = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+  const escalaMenor = ['C', 'D', 'Eb', 'F', 'G', 'Ab', 'Bb'];
+
+  // Transponer la escala según tonalidad detectada
+  const index = notas.indexOf(nota);
+  const baseEscala = tipo === "Mayor" ? escalaMayor : escalaMenor;
+
+  const escalaTranspuesta = baseEscala.map((n, i) => {
+    const pos = (index + i) % 12;
+    return notas[pos];
+  });
+
+  const acordes = escalaTranspuesta.map((n, i) => `${grados[i]}: ${n}`);
+
+  acordesContainer.innerText = `Acordes sugeridos:\n${acordes.join("\n")}`;
 }
