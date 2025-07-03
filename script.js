@@ -50,38 +50,47 @@ document.getElementById("startBtn").addEventListener("click", () => {
   const dataArray = new Uint8Array(analyzer.frequencyBinCount);
 
   meyda = Meyda.createMeydaAnalyzer({
-    audioContext: context,
-    source: analyzer,
-    bufferSize: 2048,
-    featureExtractors: ['chroma'],
-    callback: (features) => {
-        const chroma = features.chroma;
-        for (let i = 0; i < 12; i++) {
-          chromaAcumulada[i] += chroma[i];
-        }
-        frameCount++;
-      
-        const indexMax = chroma.indexOf(Math.max(...chroma));
-        const notaActual = notas[indexMax];
-      
-        // 🔁 Siempre activar la tecla
-        activarTecla(notaActual);
-      
-        // ✅ Solo mostrarla en la lista si aún no está
-        if (!notasDetectadas.has(notaActual)) {
-          notasDetectadas.add(notaActual);
-          document.getElementById("notas").innerText = `Notas encontradas: ${Array.from(notasDetectadas).join(", ")}`;
-        }
-      
-        // 🎛 Progreso de análisis
-        document.getElementById("progressBar").value = (context.currentTime / duracion) * 100;
-      
-        // 🎨 Espectro
-        analyzer.getByteFrequencyData(dataArray);
-        drawSpectrum(dataArray);
-      }
-      
-  });
+  audioContext: context,
+  source: analyzer,
+  bufferSize: 2048,
+  featureExtractors: ['chroma'],
+  callback: (features) => {
+    const chroma = features.chroma;
+
+    // ✅ UMBRAL: evita falsas notas cuando no hay energía
+    const energiaChroma = chroma.reduce((a, b) => a + b, 0);
+    if (energiaChroma < 1.5) return; // Ignora si no hay información tonal suficiente
+
+    // ⬆️ Acumular para análisis posterior
+    for (let i = 0; i < 12; i++) {
+      chromaAcumulada[i] += chroma[i];
+    }
+    frameCount++;
+
+    // 🔎 Detectar nota actual más fuerte
+    const indexMax = chroma.indexOf(Math.max(...chroma));
+    const notaActual = notas[indexMax];
+
+    // 🎹 Siempre activar la tecla del piano
+    activarTecla(notaActual);
+
+    // 📝 Agregar a la lista si es nueva
+    if (!notasDetectadas.has(notaActual)) {
+      notasDetectadas.add(notaActual);
+      document.getElementById("notas").innerText =
+        `Notas encontradas: ${Array.from(notasDetectadas).join(", ")}`;
+    }
+
+    // 📊 Actualizar barra de progreso
+    document.getElementById("progressBar").value =
+      (context.currentTime / duracion) * 100;
+
+    // 📈 Dibujar espectro
+    analyzer.getByteFrequencyData(dataArray);
+    drawSpectrum(dataArray);
+  }
+});
+
 
   meyda.start();
   source.start();
