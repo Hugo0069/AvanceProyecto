@@ -88,5 +88,18 @@ body {
   .key.black[data-note="F#"] { left: 150px; }
   .key.black[data-note="G#"] { left: 190px; }
   .key.black[data-note="A#"] { left: 230px; }
+#acordes {
+  background-color: rgba(0, 0, 0, 0.7);
+  color: white;
+  padding: 10px 15px;
+  margin: 10px auto;
+  width: fit-content;
+  max-width: 90%;
+  border-radius: 10px;
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  box-shadow: 0 0 10px #000;
+  white-space: pre-line;
+}
   
   
