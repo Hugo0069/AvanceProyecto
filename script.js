@@ -1,3 +1,4 @@
+// === VARIABLES GLOBALES ===
 const notas = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 const perfilMayor = [6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88];
 const perfilMenor = [6.33, 2.68, 3.52, 5.38, 2.60, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17];
@@ -9,7 +10,9 @@ let notasDetectadas = new Set();
 let duracion = 0;
 let canvasCtx;
 let spectrumCanvas;
+let tonalidadDetectada = null; // ✅ GLOBAL
 
+// === CARGA DE AUDIO ===
 document.getElementById("audioFile").addEventListener("change", async (event) => {
   const file = event.target.files[0];
   if (!file) return;
@@ -25,6 +28,7 @@ document.getElementById("audioFile").addEventListener("change", async (event) =>
   document.getElementById("startBtn").disabled = false;
 });
 
+// === BOTÓN DE ANALIZAR ===
 document.getElementById("startBtn").addEventListener("click", () => {
   chromaAcumulada.fill(0);
   frameCount = 0;
@@ -50,57 +54,54 @@ document.getElementById("startBtn").addEventListener("click", () => {
   const dataArray = new Uint8Array(analyzer.frequencyBinCount);
 
   meyda = Meyda.createMeydaAnalyzer({
-  audioContext: context,
-  source: analyzer,
-  bufferSize: 2048,
-  featureExtractors: ['chroma'],
-  callback: (features) => {
-    const chroma = features.chroma;
+    audioContext: context,
+    source: analyzer,
+    bufferSize: 2048,
+    featureExtractors: ['chroma'],
+    callback: (features) => {
+      const chroma = features.chroma;
 
-    // ✅ UMBRAL: evita falsas notas cuando no hay energía
-    const energiaChroma = chroma.reduce((a, b) => a + b, 0);
-    if (energiaChroma < 2.5) return; // Ignora si no hay información tonal suficiente
+      const energiaChroma = chroma.reduce((a, b) => a + b, 0);
+      if (energiaChroma < 2.5) return;
 
-    // ⬆️ Acumular para análisis posterior
-    for (let i = 0; i < 12; i++) {
-      chromaAcumulada[i] += chroma[i];
+      for (let i = 0; i < 12; i++) {
+        chromaAcumulada[i] += chroma[i];
+      }
+      frameCount++;
+
+      const indexMax = chroma.indexOf(Math.max(...chroma));
+      const notaActual = notas[indexMax];
+
+      activarTecla(notaActual);
+
+      if (!notasDetectadas.has(notaActual)) {
+        notasDetectadas.add(notaActual);
+        document.getElementById("notas").innerText = `Notas encontradas: ${Array.from(notasDetectadas).join(", ")}`;
+      }
+
+      document.getElementById("progressBar").value = (context.currentTime / duracion) * 100;
+
+      analyzer.getByteFrequencyData(dataArray);
+      drawSpectrum(dataArray);
     }
-    frameCount++;
-
-    // 🔎 Detectar nota actual más fuerte
-    const indexMax = chroma.indexOf(Math.max(...chroma));
-    const notaActual = notas[indexMax];
-
-    // 🎹 Siempre activar la tecla del piano
-    activarTecla(notaActual);
-
-    // 📝 Agregar a la lista si es nueva
-    if (!notasDetectadas.has(notaActual)) {
-      notasDetectadas.add(notaActual);
-      document.getElementById("notas").innerText =
-        `Notas encontradas: ${Array.from(notasDetectadas).join(", ")}`;
-    }
-
-    // 📊 Actualizar barra de progreso
-    document.getElementById("progressBar").value =
-      (context.currentTime / duracion) * 100;
-
-    // 📈 Dibujar espectro
-    analyzer.getByteFrequencyData(dataArray);
-    drawSpectrum(dataArray);
-  }
-});
-
+  });
 
   meyda.start();
   source.start();
+
   source.onended = () => {
     meyda.stop();
+    if (frameCount === 0) {
+      alert("No se detectaron suficientes datos para determinar la tonalidad.");
+      return;
+    }
+
     const promedio = chromaAcumulada.map(c => c / frameCount);
     mostrarTonalidades(promedio);
   };
 });
 
+// === DETECCIÓN DE TONALIDAD ===
 function mostrarTonalidades(chroma) {
   const tonalidades = [];
 
@@ -122,10 +123,9 @@ function mostrarTonalidades(chroma) {
 
   document.getElementById("tonalidades").innerText = `Tonalidades posibles:\n${lista.join("\n")}`;
 
-  // ✅ Guardar la tonalidad más fuerte para sugerir acordes luego
   tonalidadDetectada = top3[0].tonalidad;
+  mostrarAcordesPosibles(tonalidadDetectada); // ✅ Llamada correcta
 }
-
 
 function rotar(arr, n) {
   return arr.slice(n).concat(arr.slice(0, n));
@@ -158,14 +158,13 @@ function drawSpectrum(dataArray) {
     canvasCtx.fillStyle = "lime";
     canvasCtx.fillRect(i * barWidth, height - barHeight, barWidth, barHeight);
   }
-    // Frecuencia más alta
-    let maxIndex = dataArray.indexOf(Math.max(...dataArray));
-    let maxFreq = Math.round((maxIndex * context.sampleRate) / analyzer.fftSize);
-  
-    canvasCtx.fillStyle = "#fff";
-    canvasCtx.font = "16px Arial";
-    canvasCtx.fillText(`Frecuencia dominante: ${maxFreq} Hz`, 10, 20);
-  
+
+  let maxIndex = dataArray.indexOf(Math.max(...dataArray));
+  let maxFreq = Math.round((maxIndex * context.sampleRate) / analyzer.fftSize);
+
+  canvasCtx.fillStyle = "#fff";
+  canvasCtx.font = "16px Arial";
+  canvasCtx.fillText(`Frecuencia dominante: ${maxFreq} Hz`, 10, 20);
 }
 
 function activarTecla(nota) {
@@ -186,7 +185,6 @@ function mostrarAcordesPosibles(tonalidad) {
   const escalaMayor = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
   const escalaMenor = ['C', 'D', 'Eb', 'F', 'G', 'Ab', 'Bb'];
 
-  // Transponer la escala según tonalidad detectada
   const index = notas.indexOf(nota);
   const baseEscala = tipo === "Mayor" ? escalaMayor : escalaMenor;
 
@@ -199,3 +197,4 @@ function mostrarAcordesPosibles(tonalidad) {
 
   acordesContainer.innerText = `Acordes sugeridos:\n${acordes.join("\n")}`;
 }
+
