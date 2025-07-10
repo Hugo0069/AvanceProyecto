@@ -5,23 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Analizador de Notas y Tonalidades</title>
   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="fondo.css" />
   <script src="https://unpkg.com/tone/build/Tone.js"></script>
   <script src="https://unpkg.com/meyda/dist/web/meyda.min.js"></script>
-  <link rel="stylesheet" href="fondo.css" />
 </head>
 <body>
-    
   <h1 id="Titulo">🎼 Analizador de Notas y Tonalidades</h1>
   <p>Sube tu archivo de audio (MP3/WAV). El sistema detectará las notas utilizadas y posibles tonalidades.</p>
 
   <input type="file" id="audioFile" accept="audio/*" />
   <button id="startBtn" disabled>🔍 Analizar</button>
-  <progress id="progressBar" value="0" max="100" style="width: 80%; height: 20px; margin-top: 20px;"></progress>
-
+  <progress id="progressBar" value="0" max="100"></progress>
 
   <h2 id="notas">Notas encontradas: --</h2>
-  <h2 id="tonalidades">Tonalidades posibles: --</h2>
-  
+  <h2 id="tonalidades">Tonalidad más probable: --</h2>
+
+  <!-- Nueva sección para progresiones -->
+  <div id="progresiones-container" style="display: none;">
+    <h2>Progresiones de acordes sugeridas para <span id="tonalidad-principal"></span>:</h2>
+    <div id="progresiones-list"></div>
+  </div>
 
   <canvas id="spectrumCanvas" width="800" height="200"></canvas>
 
@@ -39,12 +42,8 @@
     <div class="key black" data-note="A#"></div>
     <div class="key white" data-note="B"></div>
   </div>
-  <div id="acordes">Acordes sugeridos: --</div>
 
-  
-  
-
-
+  <script src="https://cdn.jsdelivr.net/npm/@tonejs/midi@2.0.27/build/Midi.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
